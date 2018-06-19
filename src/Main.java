@@ -2,16 +2,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
-	public static final int NUM_HILOS = 8;
 	private static final int CAPACIDAD = 3;
-	private static final int PRODUCTORES = 1;
-	private static final int CONSUMIDORES = 2;
+	private static final int PRODUCTORES = 5;
+	private static final int CONSUMIDORES = 5;
 	private static final String F_ORIGEN = "resources/src.txt";
+	private static final String F_RESULTADOS = "resources/FicheroDeResultados.txt";
 
 	private static ArrayList<Thread> hilos;
 	private static ArrayBlockingQueue<String> cola;
@@ -21,18 +25,24 @@ public class Main {
 		hilos = new ArrayList<>();
 		cola = new ArrayBlockingQueue<>(CAPACIDAD);
 		File f_origen = new File(F_ORIGEN);
+		File f_resultados = new File(F_RESULTADOS);
 		BufferedReader br = null;
+		PrintWriter pw = null;
 		try {
 			FileReader fr=new FileReader(f_origen);
 			br=new BufferedReader(fr);
+
+			FileWriter fw=new FileWriter(f_resultados);
+			pw=new PrintWriter(fw);
 
 			for (int i = 0; i < PRODUCTORES; i++) {
 				Thread h = new Thread(new Productor(i+1, cola, br), "Productor-"+(i+1));
 				hilos.add(h);
 			}
 
+			Lock escrituraConsumidor = new ReentrantLock();
 			for (int i = 0; i < CONSUMIDORES; i++) {
-				Thread h = new Thread(new Consumidor(i+1, cola), "Consumidor-"+(i+1));
+				Thread h = new Thread(new Consumidor(i+1, cola, pw, escrituraConsumidor), "Consumidor-"+(i+1));
 				hilos.add(h);
 			}
 
@@ -50,6 +60,8 @@ public class Main {
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println("[!] No se ha encontrado el fichero '"+f_origen.getAbsolutePath()+"'");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		finally {
 			if(br!=null)
@@ -58,6 +70,8 @@ public class Main {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			if(pw!=null)
+				pw.close();
 		}
 
 	}
