@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class Main {
 	private static final int CAPACIDAD = 3;
@@ -40,9 +38,8 @@ public class Main {
 				hilos.add(h);
 			}
 
-			Lock escrituraConsumidor = new ReentrantLock();
 			for (int i = 0; i < CONSUMIDORES; i++) {
-				Thread h = new Thread(new Consumidor(i+1, cola, pw, escrituraConsumidor), "Consumidor-"+(i+1));
+				Thread h = new Thread(new Consumidor(i+1, cola, pw), "Consumidor-"+(i+1));
 				hilos.add(h);
 			}
 
