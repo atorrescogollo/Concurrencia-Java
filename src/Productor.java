@@ -1,36 +1,30 @@
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class Productor implements Runnable {
 
 	private int id;
 	private ArrayBlockingQueue<String> cola;
-	private BufferedReader br;
+	private Contador contador;
 
-	public Productor(int id, ArrayBlockingQueue<String> cola, BufferedReader br) {
+	public Productor(int id, ArrayBlockingQueue<String> cola, Contador contador) {
 		this.id=id;
 		this.cola=cola;
-		this.br=br;
+		this.contador=contador;
 	}
 
 	@Override
 	public void run() {
-		System.out.println("[Productor-"+id+"]: id="+id);
-		String tarea = null;
-		try {
-			while ((tarea = br.readLine())!=null) {
-				try {
-					System.out.println("[Productor-"+id+"]: "+tarea);
-					cola.put(tarea);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
+		for (int i = 0; i < 4; i++) {
+			try {
+				cola.put("HiloProductor-"+id+": Mensaje "+i);
+				System.out.println("[Productor-"+id+"]: "+"HiloProductor-"+id+": Mensaje "+i);
+				contador.elementoIntroducido();
+
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
