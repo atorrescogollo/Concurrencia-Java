@@ -1,44 +1,30 @@
 import java.util.ArrayList;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
 
 public class Main {
-	private static final int CAPACIDAD = 3;
-	private static final int PRODUCTORES = 1;
-	private static final int CONSUMIDORES = 2;
-
+	public static final int NUM_HILOS = 8;
 	private static ArrayList<Thread> hilos;
-	private static ArrayBlockingQueue<Mensaje> cola;
-	private static ConcurrentHashMap<Integer, Paquete> mapa;
 
 	public static void main(String[] args) {
 		hilos = new ArrayList<>();
-		cola = new ArrayBlockingQueue<>(CAPACIDAD);
-		mapa = new ConcurrentHashMap<>();
+		ArrayList<String> list = new ArrayList<>();
 
-		for (int i = 0; i < PRODUCTORES; i++) {
-			Thread h = new Thread(new Productor(i+1, cola, mapa), "Productor-"+(i+1));
+		Semaphore semaphore = new Semaphore(1);
+		for (int i = 0; i < NUM_HILOS; i++) {
+			Thread h = new Thread(new Hilo(i+1, list, semaphore), "Hilo-"+(i+1));
 			hilos.add(h);
-		}
-
-		for (int i = 0; i < CONSUMIDORES; i++) {
-			Thread h = new Thread(new Consumidor(i+1, cola, mapa), "Consumidor-"+(i+1));
-			hilos.add(h);
-		}
-
-		for (Thread h : hilos) {
 			h.start();
 		}
 
-		while (true) {
-			System.out.println("[Hilo-principal]: La cola contiene "+cola.size()+" elementos.");
+		for (Thread h : hilos) {
 			try {
-				Thread.sleep(1000);
+				h.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 
+		System.out.println("[Hilo-principal]: La lista contiene "+list.size()+" elementos.");
 	}
 
 }
