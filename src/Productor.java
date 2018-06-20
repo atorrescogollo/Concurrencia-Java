@@ -1,30 +1,41 @@
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Productor implements Runnable {
 
 	private int id;
-	private ArrayBlockingQueue<String> cola;
-	private Contador contador;
+	private ArrayBlockingQueue<Mensaje> cola;
+	private ConcurrentHashMap<Integer, Paquete> mapa;
 
-	public Productor(int id, ArrayBlockingQueue<String> cola, Contador contador) {
+	public Productor(int id, ArrayBlockingQueue<Mensaje> cola, ConcurrentHashMap<Integer,Paquete> mapa) {
 		this.id=id;
 		this.cola=cola;
-		this.contador=contador;
+		this.mapa=mapa;
 	}
 
 	@Override
 	public void run() {
+		System.out.println("[Productor-"+id+"]: id="+id);
 
-		for (int i = 0; i < 4; i++) {
+
+		for (int i = 0; i < 10; i++) {
+			String texto1="(id="+(i+1)+")T1Paquete";
+			String texto2="(id="+(i+1)+")T2Paquete";
+			Paquete p = new Paquete(i+1, texto1, texto2);
+			mapa.put(i+1, p);
+			System.out.println("[Productor-"+id+"]: Nuevo paquete en el mapa: "+p);
 			try {
-				cola.put("HiloProductor-"+id+": Mensaje "+i);
-				System.out.println("[Productor-"+id+"]: "+"HiloProductor-"+id+": Mensaje "+i);
-				contador.elementoIntroducido();
-
+				Mensaje m = new Mensaje(i+1, texto1);
+				cola.put(m);
+				System.out.println("[Productor-"+id+"]: Nuevo mensaje encolado: "+m);
+				m=new Mensaje(i+1, texto2);
+				cola.put(m);
+				System.out.println("[Productor-"+id+"]: Nuevo mensaje encolado: "+m);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+
 	}
 
 }
